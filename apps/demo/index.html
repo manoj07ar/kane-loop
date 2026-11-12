@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Splitly</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Splitly</h1>
+      <p class="tag">Split bills with friends. Verified by Kane Loop.</p>
+
+      <section aria-labelledby="people-h">
+        <h2 id="people-h">People</h2>
+        <form id="person-form">
+          <label for="person-name">Name</label>
+          <input id="person-name" name="name" autocomplete="off" placeholder="e.g. Ana" />
+          <button type="submit">Add person</button>
+        </form>
+        <ul id="people" aria-label="People list"></ul>
+      </section>
+
+      <section aria-labelledby="expense-h">
+        <h2 id="expense-h">Add expense</h2>
+        <form id="expense-form">
+          <label for="expense-desc">Description</label>
+          <input id="expense-desc" name="description" placeholder="Dinner" />
+          <label for="expense-amount">Amount (€)</label>
+          <input id="expense-amount" name="amount" inputmode="decimal" placeholder="45.00" />
+          <label for="expense-payer">Paid by</label>
+          <select id="expense-payer" name="payer"></select>
+          <fieldset id="split-among"><legend>Split among</legend></fieldset>
+          <button type="submit">Add expense</button>
+        </form>
+        <p id="error" role="alert"></p>
+      </section>
+
+      <section aria-labelledby="expenses-h">
+        <h2 id="expenses-h">Expenses</h2>
+        <ul id="expenses" aria-label="Expenses list"></ul>
+        <p>Total spent: <strong id="total">€0.00</strong></p>
+      </section>
+
+      <section aria-labelledby="settle-h">
+        <h2 id="settle-h">Who owes whom</h2>
+        <ul id="balances" aria-label="Balances"></ul>
+        <button id="settle-btn" type="button">Settle up</button>
+        <ul id="transfers" aria-label="Settle up transfers"></ul>
+        <button id="reset-btn" type="button" class="secondary">Reset</button>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
