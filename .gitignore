@@ -1,0 +1,7 @@
+node_modules
+dist
+.kane-loop/
+.testmuai/evidence/
+.testmuai/variables/
+*.log
+.env
