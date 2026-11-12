@@ -20,6 +20,7 @@ describe("MCP server", () => {
     const res = await client.callTool({ name: "verify_with_kane", arguments: { url: "http://localhost:3000", objective: "x" } });
     expect((res.structuredContent as { status: string }).status).toBe("pass");
     const st = await client.callTool({ name: "loop_status", arguments: {} });
-    expect((st.structuredContent as { state: string }).state).toBe("idle");
+    expect((st.structuredContent as { state: string; passes: number }).state).toBe("green");
+    expect((st.structuredContent as { passes: number }).passes).toBe(1);
   });
 });

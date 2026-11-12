@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { verifyWithKane } from "./kane.js";
+import { computeStatus, readEvents } from "./loop.js";
 
 export function createServer(opts: { eventsDir?: string; bin?: string } = {}): McpServer {
   const server = new McpServer({ name: "kane-loop", version: "0.0.1" });
@@ -24,9 +25,9 @@ export function createServer(opts: { eventsDir?: string; bin?: string } = {}): M
     },
   );
 
-  server.tool("loop_status", "Report the state of the Kane Loop (stub: full status arrives later).", {}, async () => {
-    const result = { state: "idle", iteration: 0, note: "stub" };
-    return { content: [{ type: "text", text: JSON.stringify(result) }], structuredContent: result };
+  server.tool("loop_status", "Report the Kane Loop state from the event log: green/red/verifying, current red iteration, run counts and the last result.", {}, async () => {
+    const result = computeStatus(await readEvents(opts.eventsDir ?? process.cwd()));
+    return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: { ...result } };
   });
 
   return server;

@@ -4,7 +4,8 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "kane-loop-mcp": "dist/index.js"
+    "kane-loop-mcp": "dist/index.js",
+    "kane-loop-hook": "dist/hook-cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
