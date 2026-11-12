@@ -1,0 +1,15 @@
+{"ts": "2026-11-12T18:00:00.000Z", "example": true, "source": "mcp-server", "type": "note", "text": "EXAMPLE DATA for the console replay mode. Not a real Kane run; replace with a recorded events.jsonl."}
+{"ts": "2026-11-12T18:00:01.000Z", "example": true, "source": "mcp-server", "type": "replay_start", "paths": [".testmuai/tests"]}
+{"ts": "2026-11-12T18:00:03.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 1, "status": "passed"}}
+{"ts": "2026-11-12T18:00:05.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 2, "status": "passed"}}
+{"ts": "2026-11-12T18:00:07.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 3, "status": "passed"}}
+{"ts": "2026-11-12T18:00:09.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 4, "status": "failed", "remark": "Expected Bea to owe 33.34 but the page shows 33.33"}}
+{"ts": "2026-11-12T18:00:10.000Z", "example": true, "source": "mcp-server", "type": "replay_end", "status": "fail", "exit_code": 1, "failed": [{"path": ".testmuai/tests/split_three_ways_test.md", "message": "Expected Bea to owe 33.34 but the page shows 33.33"}]}
+{"ts": "2026-11-12T18:00:10.500Z", "example": true, "source": "hook:cursor", "type": "loop_iteration", "result": "red", "iteration": 1, "mode": "replay", "failed": [{"path": ".testmuai/tests/split_three_ways_test.md", "failed_step": 4, "heading": "Check who owes whom", "remark": "Expected Bea to owe 33.34 but the page shows 33.33"}]}
+{"ts": "2026-11-12T18:00:40.000Z", "example": true, "source": "mcp-server", "type": "replay_start", "paths": [".testmuai/tests"]}
+{"ts": "2026-11-12T18:00:42.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 1, "status": "passed"}}
+{"ts": "2026-11-12T18:00:44.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 2, "status": "passed"}}
+{"ts": "2026-11-12T18:00:46.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 3, "status": "passed"}}
+{"ts": "2026-11-12T18:00:48.000Z", "example": true, "source": "mcp-server", "type": "kane_event", "event": {"step": 4, "status": "passed"}}
+{"ts": "2026-11-12T18:00:50.000Z", "example": true, "source": "mcp-server", "type": "replay_end", "status": "pass", "exit_code": 0, "failed": []}
+{"ts": "2026-11-12T18:00:50.400Z", "example": true, "source": "hook:cursor", "type": "loop_iteration", "result": "green", "iteration": 0, "mode": "replay"}

@@ -1,0 +1,26 @@
+:root { font-family: ui-sans-serif, system-ui, sans-serif; color: #e8e8ea; background: #0d0f12; }
+body { max-width: 920px; margin: 0 auto; padding: 24px; }
+header { display: flex; align-items: center; justify-content: space-between; }
+h1 { font-size: 22px; margin: 0; } h1 span { color: #8a8f98; font-weight: 400; }
+.muted { color: #8a8f98; font-size: 13px; }
+.badge { padding: 6px 12px; border-radius: 999px; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: .05em; }
+.badge.green, .pass { background: #12391f; color: #5fe08a; }
+.badge.red, .fail, .timeout, .error { background: #3d1518; color: #ff7a7f; }
+.badge.verifying, .running { background: #3a3110; color: #ffd166; }
+.badge.gave_up { background: #2b2b33; color: #c0c0d0; }
+.badge.idle { background: #1d2027; color: #8a8f98; }
+.stats { display: flex; gap: 12px; margin: 16px 0; }
+.stat { background: #161a20; border-radius: 10px; padding: 10px 14px; min-width: 90px; }
+.stat b { display: block; font-size: 20px; }
+.iter { border-left: 3px solid #2a2f38; padding: 4px 0 12px 16px; margin: 0 0 8px 6px; }
+.iter.green { border-color: #5fe08a; } .iter.red { border-color: #ff7a7f; } .iter.gave_up { border-color: #8a8f98; }
+.iter h2 { font-size: 15px; margin: 6px 0; display: flex; gap: 8px; align-items: center; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; }
+.run { background: #161a20; border-radius: 10px; padding: 10px 12px; margin: 6px 0; }
+.run .head { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.steps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.step { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #1d2027; }
+.step.passed, .step.pass, .step.success { background: #12391f; color: #5fe08a; }
+.step.failed, .step.fail, .step.error { background: #3d1518; color: #ff7a7f; }
+.remark { margin-top: 8px; font-size: 13px; color: #ffb3b6; }
+a { color: #7fb4ff; }
