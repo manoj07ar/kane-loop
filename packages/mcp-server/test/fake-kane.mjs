@@ -4,6 +4,19 @@ const scenario = process.env.FAKE_KANE_SCENARIO ?? "pass";
 const out = (o) => process.stdout.write(JSON.stringify(o) + "\n");
 const base = { test_url: "https://test-manager.example/run/123", session_dir: "/tmp/fake-session" };
 out({ type: "argv", argv: process.argv.slice(2) });
+if (process.argv[2] === "testrun") {
+  const log = process.env.FAKE_KANE_LOG ?? "/tmp/fake-member.ndjson";
+  if (scenario === "exit2") { process.stderr.write("Not logged in\n"); process.exit(2); }
+  out({ type: "testrun_start", execution_id: "exec-1", members: ["flows/add_expense_test.md", "flows/settle_test.md"], parallel: 1 });
+  out({ type: "testrun_member_event", event: { step: 1 } });
+  out({ type: "testrun_member_end", path: "flows/add_expense_test.md", test_id: "T-1", status: "passed", duration_s: 4.2, log_path: "/tmp/a.ndjson" });
+  const failing = scenario === "fail";
+  out({ type: "testrun_member_end", path: "flows/settle_test.md", test_id: "T-2", status: failing ? "failed" : "passed", duration_s: 5.1, log_path: log,
+    ...(failing ? { failure: { message: "Total shows 99.99, expected 100.00", step_index: 4 } } : {}) });
+  out({ type: "testrun_summary", execution: {}, authored: [], totals: { passed: failing ? 1 : 2, failed: failing ? 1 : 0, broken: 0, skipped: 0 }, duration_s: 9.3, upload: null, cancelled: false });
+  out({ type: "testrun_done", execution_id: "exec-1", overall_status: failing ? "failed" : "passed" });
+  process.exit(failing ? 1 : 0);
+}
 if (scenario === "exit2") {
   process.stderr.write("Not logged in\n");
   out({ type: "run_end", status: "not_started", reason: "not logged in" });

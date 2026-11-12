@@ -16,7 +16,9 @@ describe("MCP server", () => {
     const client = new Client({ name: "t", version: "0" });
     await Promise.all([server.connect(a), client.connect(b)]);
     const names = (await client.listTools()).tools.map((t) => t.name).sort();
-    expect(names).toEqual(["loop_status", "verify_with_kane"]);
+    expect(names).toEqual(["get_failure", "loop_status", "replay_tests", "verify_with_kane"]);
+    const rp = await client.callTool({ name: "replay_tests", arguments: {} });
+    expect((rp.structuredContent as { status: string }).status).toBe("pass");
     const res = await client.callTool({ name: "verify_with_kane", arguments: { url: "http://localhost:3000", objective: "x" } });
     expect((res.structuredContent as { status: string }).status).toBe("pass");
     const st = await client.callTool({ name: "loop_status", arguments: {} });

@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { verifyWithKane } from "./kane.js";
 import { computeStatus, readEvents } from "./loop.js";
+import { replayTests, getFailure } from "./testrun.js";
 
 export function createServer(opts: { eventsDir?: string; bin?: string } = {}): McpServer {
   const server = new McpServer({ name: "kane-loop", version: "0.0.1" });
@@ -29,6 +30,39 @@ export function createServer(opts: { eventsDir?: string; bin?: string } = {}): M
     const result = computeStatus(await readEvents(opts.eventsDir ?? process.cwd()));
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: { ...result } };
   });
+
+  server.tool(
+    "replay_tests",
+    "Replay the saved Kane flows (*_test.md) in a real browser. Costs 0 credits. Call after every change before saying you're done; returns which flows failed and why.",
+    {
+      paths: z.array(z.string()).optional().describe("Specific *_test.md files or folders; default is every saved flow"),
+      match: z.string().optional().describe("Regex on project-relative path to pick flows"),
+      tags: z.array(z.string()).optional().describe("Only flows with any of these frontmatter tags"),
+      fail_fast: z.boolean().optional().describe("Stop at the first failing flow"),
+    },
+    async (args) => {
+      const result = await replayTests({ paths: args.paths, match: args.match, tags: args.tags, failFast: args.fail_fast }, opts);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        structuredContent: { ...result },
+        isError: result.status === "pass" ? undefined : true,
+      };
+    },
+  );
+
+  server.tool(
+    "get_failure",
+    "Read the evidence for a failed flow: failing step, its heading, Kane's remarks and screenshots. Pass log_path from a replay_tests failure.",
+    { log_path: z.string().min(1).describe("log_path of the failed member from replay_tests") },
+    async ({ log_path }) => {
+      try {
+        const result = await getFailure(log_path);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: { ...result } };
+      } catch (e) {
+        return { content: [{ type: "text", text: `Could not read ${log_path}: ${String(e)}` }], isError: true };
+      }
+    },
+  );
 
   return server;
 }
