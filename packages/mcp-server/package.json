@@ -1,0 +1,12 @@
+{
+  "name": "@kane-loop/mcp-server",
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "kane-loop-mcp": "dist/index.js" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}
