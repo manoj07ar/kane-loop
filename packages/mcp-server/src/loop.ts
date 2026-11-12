@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { eventsPath } from "./events.js";
 import type { VerifyInput } from "./kane.js";
@@ -12,6 +12,37 @@ export interface LoopConfig {
   flows: Flow[];
   /** Max consecutive red iterations before the hook stops blocking. */
   maxIterations: number;
+  /**
+   * Saved Kane flows (*_test.md) to replay with `kane-cli testrun run` (0 credits). `false` turns replay off.
+   * When omitted, the hook auto-detects `.testmuai/tests/*_test.md`.
+   */
+  replay?: ReplayConfig | false;
+}
+
+export interface ReplayConfig {
+  paths?: string[];
+  match?: string;
+  tags?: string[];
+}
+
+export const SAVED_FLOWS_DIR = ".testmuai/tests";
+
+/** Saved Kane flows under `.testmuai/tests` (what `kane-cli run --name` writes), relative to dir. */
+export async function findSavedFlows(dir: string): Promise<string[]> {
+  try {
+    const names = await readdir(join(dir, SAVED_FLOWS_DIR));
+    return names.filter((n) => n.endsWith("_test.md")).sort().map((n) => `${SAVED_FLOWS_DIR}/${n}`);
+  } catch {
+    return [];
+  }
+}
+
+/** Replay settings the stop hook should use, or undefined to fall back to live `kane-cli run` flows. */
+export async function resolveReplay(dir: string, cfg: LoopConfig): Promise<ReplayConfig | undefined> {
+  if (cfg.replay === false) return undefined;
+  if (cfg.replay) return cfg.replay;
+  const saved = await findSavedFlows(dir);
+  return saved.length ? { paths: [SAVED_FLOWS_DIR] } : undefined;
 }
 
 export const DEFAULT_MAX_ITERATIONS = 3;
@@ -39,7 +70,15 @@ export async function loadConfig(dir: string): Promise<LoopConfig> {
   } catch { /* no config: no flows */ }
   const flows = Array.isArray(raw.flows) ? (raw.flows as Flow[]).filter((f) => f && typeof f.url === "string" && typeof f.objective === "string") : [];
   const max = typeof raw.maxIterations === "number" && raw.maxIterations > 0 ? raw.maxIterations : DEFAULT_MAX_ITERATIONS;
-  return { flows, maxIterations: max };
+  const strs = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.length > 0) : undefined);
+  let replay: LoopConfig["replay"];
+  if (raw.replay === false) replay = false;
+  else if (raw.replay === true) replay = { paths: [SAVED_FLOWS_DIR] };
+  else if (raw.replay && typeof raw.replay === "object") {
+    const r = raw.replay as Json;
+    replay = { paths: strs(r.paths), match: typeof r.match === "string" ? r.match : undefined, tags: strs(r.tags) };
+  }
+  return { flows, maxIterations: max, ...(replay !== undefined ? { replay } : {}) };
 }
 
 export interface LoopStatus {

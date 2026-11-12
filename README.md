@@ -8,7 +8,7 @@ An MCP server that gives any agent a `verify_with_kane` tool, backed by [Kane CL
 
 ## Layout
 - `packages/mcp-server`: MCP server (stdio). Tools: `verify_with_kane(url, objective, name?, timeout?)` and `loop_status()` (green/red/verifying, red iteration count, last result, all read from the event log).
-- `kane-loop-hook <claude|cursor>`: stop hook. After every agent turn it re-runs the flows in `.kane-loop.json` with Kane CLI. Green lets the agent stop. Red blocks the stop and hands the agent Kane's failing-step remark as its next instruction (Claude Code `decision: block`, Cursor `followup_message`), up to `maxIterations` (default 3). If Kane can't start (login or credits), it reports that and doesn't loop.
+- `kane-loop-hook <claude|cursor>`: stop hook. After every agent turn it replays the repo's saved Kane flows (`.testmuai/tests/*_test.md`, via `kane-cli testrun run`, 0 credits) or, if there are none yet, re-runs the live flows in `.kane-loop.json`. Set `"replay": { "paths": [...], "match": "...", "tags": [...] }` to choose which saved flows run, or `"replay": false` to force live runs. Green lets the agent stop. Red blocks the stop and hands the agent Kane's failing-step remark as its next instruction (Claude Code `decision: block`, Cursor `followup_message`), up to `maxIterations` (default 3). If Kane can't start (login or credits), it reports that and doesn't loop.
 - `apps/demo`: Splitly, the bill-splitter the agent works on.
 - `apps/console`: placeholder for the live Loop Console.
 

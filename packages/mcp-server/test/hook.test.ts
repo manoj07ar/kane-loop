@@ -110,3 +110,69 @@ describe("computeStatus", () => {
     expect(computeStatus([{ type: "verify_start" }]).state).toBe("verifying");
   });
 });
+
+describe("replay mode (saved flows)", () => {
+  const saveFlow = async () => {
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(join(dir, ".testmuai", "tests"), { recursive: true });
+    await writeFile(join(dir, ".testmuai", "tests", "settle_test.md"), "# Settle\n");
+  };
+
+  it("prefers replaying saved flows over live runs and passes the folder to testrun", async () => {
+    await config();
+    await saveFlow();
+    process.env.FAKE_KANE_SCENARIO = "pass";
+    const r = await runStopHook("claude", {}, dir, { bin });
+    expect(r.result).toBe("green");
+    expect(r.mode).toBe("replay");
+    const events = await readEvents(dir);
+    const argv = events.find((e) => (e.event as { type?: string })?.type === "argv")?.event as { argv: string[] } | undefined;
+    expect(argv?.argv.slice(0, 3)).toEqual(["testrun", "run", ".testmuai/tests"]);
+  });
+
+  it("works with saved flows and no live flows in config", async () => {
+    await saveFlow();
+    process.env.FAKE_KANE_SCENARIO = "pass";
+    expect((await runStopHook("claude", {}, dir, { bin })).result).toBe("green");
+  });
+
+  it("blocks with the failing saved flow, step heading and Kane's remark from the member log", async () => {
+    await saveFlow();
+    const log = join(dir, "member.ndjson");
+    await writeFile(log, [
+      { type: "test_md_step_start", step_index: 4, heading: "Verify total is 100.00" },
+      { type: "test_md_step_end", step_index: 4, status: "failed", remark: "Rounded each share down", screenshot: "/tmp/s4.png" },
+    ].map((l) => JSON.stringify(l)).join("\n") + "\n");
+    process.env.FAKE_KANE_SCENARIO = "fail";
+    process.env.FAKE_KANE_LOG = log;
+    const r = await runStopHook("cursor", { status: "completed" }, dir, { bin });
+    delete process.env.FAKE_KANE_LOG;
+    expect(r.result).toBe("red");
+    const msg = String(r.output?.followup_message);
+    expect(msg).toContain('Saved flow flows/settle_test.md: step 4 ("Verify total is 100.00") failed: Total shows 99.99, expected 100.00');
+    expect(msg).toContain("Rounded each share down");
+    expect(msg).toContain("/tmp/s4.png");
+    expect(computeStatus(await readEvents(dir)).state).toBe("red");
+  });
+
+  it("doesn't loop when the replay can't start", async () => {
+    await saveFlow();
+    process.env.FAKE_KANE_SCENARIO = "exit2";
+    const r = await runStopHook("claude", {}, dir, { bin });
+    expect(r.result).toBe("gave_up");
+    expect(r.output).toBeUndefined();
+    expect(r.message).toContain("Not logged in");
+  });
+
+  it("honours replay: false and an explicit replay config", async () => {
+    await saveFlow();
+    await config({ replay: false });
+    process.env.FAKE_KANE_SCENARIO = "pass";
+    expect((await runStopHook("claude", {}, dir, { bin })).mode).toBe("live");
+    await config({ replay: { paths: ["flows"], match: "settle" } });
+    const r = await runStopHook("claude", {}, dir, { bin });
+    expect(r.mode).toBe("replay");
+    const argvs = (await readEvents(dir)).map((e) => (e.event as { type?: string; argv?: string[] })).filter((e) => e?.type === "argv");
+    expect(argvs.at(-1)?.argv).toEqual(["testrun", "run", "flows", "--agent", "--on-failure", "continue", "--match", "settle"]);
+  });
+});
