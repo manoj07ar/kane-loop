@@ -14,6 +14,12 @@ An MCP server that gives any agent a `verify_with_kane` tool, backed by [Kane CL
 
 ## Wire up the loop
 
+One command in the repo you're working on:
+```
+npx kane-loop init --url http://localhost:5173
+```
+It adds the MCP server for Cursor (`.cursor/mcp.json`) and Claude Code (`.mcp.json`), both stop hooks, a starter `.kane-loop.json`, a Kane Loop section in `AGENTS.md` and `.gitignore` entries. It merges into existing configs, never overwrites your `.kane-loop.json`, and is safe to re-run (`--dry-run` previews). Or wire it by hand:
+
 `.kane-loop.json` in the repo you're working on:
 ```json
 { "flows": [{ "url": "http://localhost:5173", "objective": "Add Ana and Ben, add a 100.00 expense paid by Ana split between both, verify Ben owes Ana 50.00" }], "maxIterations": 3 }

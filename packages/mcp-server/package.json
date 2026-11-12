@@ -5,7 +5,8 @@
   "type": "module",
   "bin": {
     "kane-loop-mcp": "dist/index.js",
-    "kane-loop-hook": "dist/hook-cli.js"
+    "kane-loop-hook": "dist/hook-cli.js",
+    "kane-loop": "dist/init-cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
