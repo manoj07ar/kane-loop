@@ -26,8 +26,9 @@ Claude Code (`.claude/settings.json`):
 
 Cursor (`.cursor/hooks.json`):
 ```json
-{ "version": 1, "hooks": { "stop": [{ "command": "kane-loop-hook cursor" }] } }
+{ "version": 1, "hooks": { "stop": [{ "command": "kane-loop-hook cursor", "timeout": 600, "loop_limit": 3 }] } }
 ```
+Matches Cursor's documented `stop` hook: stdin carries `status` and `loop_count`, and a non-empty `followup_message` on stdout is auto-submitted as the next user message. Kane runs a real browser, so give the hook a generous `timeout` (seconds), and keep `loop_limit` equal to `maxIterations`. The hook also reads `loop_count`, so it stops looping even if `loop_limit` is higher. The repo is found from `workspace_roots` / `CURSOR_PROJECT_DIR` (set `KANE_LOOP_DIR` to override).
 
 ## Develop
 ```

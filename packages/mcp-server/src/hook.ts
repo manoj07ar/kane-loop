@@ -25,6 +25,18 @@ export function feedback(failures: HookOutcome["failures"], iteration: number, m
 }
 
 /**
+ * Which repo the hook should read `.kane-loop.json` from. Claude Code sends `cwd` on stdin; Cursor sends
+ * `workspace_roots` and sets CURSOR_PROJECT_DIR (Claude-compat alias CLAUDE_PROJECT_DIR). KANE_LOOP_DIR overrides all.
+ */
+export function resolveDir(input: Json, env: NodeJS.ProcessEnv = process.env, fallback: string = process.cwd()): string {
+  if (env.KANE_LOOP_DIR) return env.KANE_LOOP_DIR;
+  if (typeof input.cwd === "string" && input.cwd) return input.cwd;
+  const roots = input.workspace_roots;
+  if (Array.isArray(roots) && typeof roots[0] === "string" && roots[0]) return roots[0];
+  return env.CURSOR_PROJECT_DIR || env.CLAUDE_PROJECT_DIR || fallback;
+}
+
+/**
  * Stop-hook entry: replay the configured flows; on failure, block the agent's stop and hand it Kane's remarks.
  * `input` is the JSON the agent's hook runner wrote on stdin (Claude Code Stop hook or Cursor stop hook).
  */
@@ -52,7 +64,9 @@ export async function runStopHook(agent: AgentKind, input: Json, dir: string, op
     return { result: "green", iteration: 0, failures };
   }
 
-  const iteration = prevIteration + 1;
+  // Cursor tells us how many follow-ups it already auto-submitted this conversation; trust the larger count.
+  const cursorLoops = agent === "cursor" && typeof input.loop_count === "number" ? input.loop_count : 0;
+  const iteration = Math.max(prevIteration, cursorLoops) + 1;
   // Kane couldn't start (credits/login) is not the agent's bug: surface it but don't loop on it.
   const infra = failures.every((f) => f.result.status === "not_started" || f.result.status === "error");
   if (iteration > cfg.maxIterations || infra) {

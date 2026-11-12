@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { runStopHook } from "../src/hook.js";
+import { resolveDir, runStopHook } from "../src/hook.js";
 import { computeStatus, readEvents } from "../src/loop.js";
 
 const bin = resolve(__dirname, "fake-kane.mjs");
@@ -70,6 +70,35 @@ describe("runStopHook", () => {
     const r = await runStopHook("claude", {}, dir, { bin });
     expect(r.result).toBe("gave_up");
     expect(r.message).toContain("kane-cli login");
+  });
+});
+
+describe("resolveDir", () => {
+  it("prefers KANE_LOOP_DIR, then Claude cwd, then Cursor workspace_roots, then env, then fallback", () => {
+    expect(resolveDir({ cwd: "/a" }, { KANE_LOOP_DIR: "/o" }, "/f")).toBe("/o");
+    expect(resolveDir({ cwd: "/a", workspace_roots: ["/w"] }, {}, "/f")).toBe("/a");
+    expect(resolveDir({ workspace_roots: ["/w", "/x"] }, { CURSOR_PROJECT_DIR: "/c" }, "/f")).toBe("/w");
+    expect(resolveDir({}, { CURSOR_PROJECT_DIR: "/c" }, "/f")).toBe("/c");
+    expect(resolveDir({}, { CLAUDE_PROJECT_DIR: "/cl" }, "/f")).toBe("/cl");
+    expect(resolveDir({}, {}, "/f")).toBe("/f");
+  });
+});
+
+describe("cursor loop_count", () => {
+  it("gives up when Cursor already auto-continued maxIterations times", async () => {
+    await config({ maxIterations: 3 });
+    process.env.FAKE_KANE_SCENARIO = "fail";
+    const r = await runStopHook("cursor", { status: "completed", loop_count: 3 }, dir, { bin });
+    expect(r.result).toBe("gave_up");
+    expect(r.output).toBeUndefined();
+  });
+  it("numbers the attempt from Cursor's loop_count", async () => {
+    await config({ maxIterations: 3 });
+    process.env.FAKE_KANE_SCENARIO = "fail";
+    const r = await runStopHook("cursor", { status: "completed", loop_count: 1 }, dir, { bin });
+    expect(r.result).toBe("red");
+    expect(r.iteration).toBe(2);
+    expect(String(r.output?.followup_message)).toContain("attempt 2 of 3");
   });
 });
 
