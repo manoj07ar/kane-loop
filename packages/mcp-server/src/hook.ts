@@ -1,6 +1,6 @@
 import { appendEvent } from "./events.js";
 import { verifyWithKane, type RunOptions, type VerifyResult } from "./kane.js";
-import { computeStatus, loadConfig, readEvents, resolveReplay, type Json } from "./loop.js";
+import { computeStatus, loadConfig, readEvents, resolveReplay, type Json, type LoopConfig } from "./loop.js";
 import { getFailure, replayTests, type ReplayMember } from "./testrun.js";
 
 export type AgentKind = "claude" | "cursor";
@@ -64,6 +64,42 @@ export function resolveDir(input: Json, env: NodeJS.ProcessEnv = process.env, fa
   return env.CURSOR_PROJECT_DIR || env.CLAUDE_PROJECT_DIR || fallback;
 }
 
+export type CheckResult =
+  | { kind: "none"; message: string }
+  | { kind: "unavailable"; mode: "replay" | "live"; failures: HookFailure[]; ran: number; infraOnly: true; message: string }
+  | { kind: "ran"; mode: "replay" | "live"; failures: HookFailure[]; ran: number; infraOnly: boolean };
+
+/**
+ * Runs the repo's Kane checks once: replay saved flows (0 credits) or, if none, the configured live flows.
+ * Shared by the stop hooks and `kane-loop watch`. Emits only the per-run events (replay and verify start/end).
+ */
+export async function runChecks(dir: string, cfg: LoopConfig, opts: RunOptions = {}): Promise<CheckResult> {
+  const replay = await resolveReplay(dir, cfg);
+  const mode: "replay" | "live" = replay ? "replay" : "live";
+  const failures: HookFailure[] = [];
+  let ran = 0;
+  if (replay) {
+    const r = await replayTests(replay, { ...opts, eventsDir: dir, cwd: opts.cwd ?? dir });
+    ran = r.members.length;
+    if (r.status === "not_started" || r.status === "error" || r.status === "cancelled") {
+      return { kind: "unavailable", mode, failures, ran, infraOnly: true, message: `Kane CLI could not replay the saved flows (check kane-cli login / balance): ${r.summary}` };
+    }
+    for (const m of r.failed) failures.push(await replayFailure(m));
+    if (r.status === "fail" && failures.length === 0) {
+      failures.push({ kind: "replay", path: "(testrun)", member: { path: "(testrun)", status: "failed", failure: { message: r.summary } } });
+    }
+    return { kind: "ran", mode, failures, ran, infraOnly: false };
+  }
+  if (cfg.flows.length === 0) return { kind: "none", message: "no flows in .kane-loop.json and no saved flows" };
+  for (const flow of cfg.flows) {
+    const result = await verifyWithKane(flow, { ...opts, eventsDir: dir });
+    ran++;
+    if (result.status !== "pass") failures.push({ kind: "live", objective: flow.objective, url: flow.url, result });
+  }
+  const infraOnly = failures.length > 0 && failures.every((f) => f.kind === "live" && (f.result.status === "not_started" || f.result.status === "error"));
+  return { kind: "ran", mode, failures, ran, infraOnly };
+}
+
 /**
  * Stop-hook entry: replay saved Kane flows (0 credits) or, if none, run the configured live flows; on failure, block the agent's stop and hand it Kane's remarks.
  * `input` is the JSON the agent's hook runner wrote on stdin (Claude Code Stop hook or Cursor stop hook).
@@ -79,31 +115,12 @@ export async function runStopHook(agent: AgentKind, input: Json, dir: string, op
   const prev = computeStatus(await readEvents(dir));
   const prevIteration = prev.state === "red" ? prev.iteration : 0;
 
-  // Prefer replaying saved flows: 0 credits and deterministic. Fall back to live runs of configured flows.
-  const replay = await resolveReplay(dir, cfg);
-  const mode: "replay" | "live" = replay ? "replay" : "live";
-  const failures: HookFailure[] = [];
-  let ran = 0;
-  let infraOnly = false;
-  if (replay) {
-    const r = await replayTests(replay, { ...opts, eventsDir: dir, cwd: opts.cwd ?? dir });
-    ran = r.members.length;
-    if (r.status === "not_started" || r.status === "error" || r.status === "cancelled") {
-      await emit({ type: "loop_iteration", result: "gave_up", iteration: prevIteration + 1, mode, reason: "kane_unavailable" });
-      return { result: "gave_up", iteration: prevIteration + 1, mode, failures, message: `Kane CLI could not replay the saved flows (check kane-cli login / balance): ${r.summary}` };
-    }
-    for (const m of r.failed) failures.push(await replayFailure(m));
-    if (r.status === "fail" && failures.length === 0) {
-      failures.push({ kind: "replay", path: "(testrun)", member: { path: "(testrun)", status: "failed", failure: { message: r.summary } } });
-    }
-  } else {
-    if (cfg.flows.length === 0) return { result: "skipped", iteration: 0, failures: [], message: "no flows in .kane-loop.json and no saved flows" };
-    for (const flow of cfg.flows) {
-      const result = await verifyWithKane(flow, { ...opts, eventsDir: dir });
-      ran++;
-      if (result.status !== "pass") failures.push({ kind: "live", objective: flow.objective, url: flow.url, result });
-    }
-    infraOnly = failures.length > 0 && failures.every((f) => f.kind === "live" && (f.result.status === "not_started" || f.result.status === "error"));
+  const checked = await runChecks(dir, cfg, opts);
+  if (checked.kind === "none") return { result: "skipped", iteration: 0, failures: [], message: checked.message };
+  const { mode, failures, ran, infraOnly } = checked;
+  if (checked.kind === "unavailable") {
+    await emit({ type: "loop_iteration", result: "gave_up", iteration: prevIteration + 1, mode, reason: "kane_unavailable" });
+    return { result: "gave_up", iteration: prevIteration + 1, mode, failures, message: checked.message };
   }
 
   if (failures.length === 0) {

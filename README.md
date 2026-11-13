@@ -25,6 +25,12 @@ npx kane-loop doctor
 ```
 It checks that kane-cli is installed and logged in, that you have credits, that `.kane-loop.json` has flows (and counts saved flows, which replay for 0 credits), that the stop hooks and MCP server are wired, and that your app URL answers. It exits 1 with a fix for each problem, so it also works as a CI or pre-demo gate (`--no-url` skips the app check).
 
+Want Kane on every save too, not just at the end of the agent's turn? Run this in a second terminal:
+```
+npx kane-loop watch
+```
+It watches the repo (skipping `node_modules`, `.git`, build output and Kane's own files), waits until saves settle (`--debounce 1500` ms by default, bursts collapse into one run), then replays the saved flows, or the live flows if there are none. Red prints Kane's failing step and writes it to `.kane-loop/last-failure.md` for you or your agent to read; green clears that file. Watch runs show up in the Loop Console as `watch_run` events and never count toward the stop hook's iteration cap.
+
 Or wire it by hand:
 
 `.kane-loop.json` in the repo you're working on:
