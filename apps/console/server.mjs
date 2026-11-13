@@ -4,7 +4,8 @@
 import { createServer } from "node:http";
 import { readFile, stat, open } from "node:fs/promises";
 import { watch } from "node:fs";
-import { join, extname, resolve, normalize } from "node:path";
+import { join, extname, resolve, normalize, sep } from "node:path";
+import { realpath } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 const args = process.argv.slice(2);
@@ -13,7 +14,21 @@ const port = portIdx >= 0 ? Number(args[portIdx + 1]) : Number(process.env.PORT 
 const repoDir = resolve(args.find((a, i) => !a.startsWith("--") && args[i - 1] !== "--port") ?? process.env.KANE_LOOP_DIR ?? process.cwd());
 const eventsFile = join(repoDir, ".kane-loop", "events.jsonl");
 const dist = join(fileURLToPath(new URL(".", import.meta.url)), "dist");
-const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".jsonl": "application/x-ndjson", ".svg": "image/svg+xml", ".png": "image/png" };
+const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".jsonl": "application/x-ndjson", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif" };
+const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif"]);
+
+// Kane screenshots only: image files that resolve (after symlinks) inside the repo dir.
+async function artifact(res, p) {
+  try {
+    if (!p || !IMAGE_EXT.has(extname(p).toLowerCase())) throw new Error("not an image");
+    const root = await realpath(repoDir);
+    const file = await realpath(resolve(repoDir, p));
+    if (file !== root && !file.startsWith(root + sep)) throw new Error("outside repo");
+    const body = await readFile(file);
+    res.writeHead(200, { "content-type": types[extname(file).toLowerCase()], "cache-control": "no-cache" });
+    return res.end(body);
+  } catch { res.writeHead(404); return res.end("not found"); }
+}
 
 async function size() { try { return (await stat(eventsFile)).size; } catch { return 0; } }
 async function readFrom(offset) {
@@ -55,6 +70,7 @@ function sse(req, res) {
 createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", "http://x");
   if (url.pathname === "/events") return sse(req, res);
+  if (url.pathname === "/artifact") return artifact(res, url.searchParams.get("path"));
   if (url.pathname === "/events.jsonl") {
     try { res.writeHead(200, { "content-type": types[".jsonl"] }); return res.end(await readFile(eventsFile)); }
     catch { res.writeHead(200, { "content-type": types[".jsonl"] }); return res.end(""); }

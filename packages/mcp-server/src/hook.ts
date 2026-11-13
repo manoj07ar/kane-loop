@@ -126,7 +126,7 @@ export async function runStopHook(agent: AgentKind, input: Json, dir: string, op
     type: "loop_iteration", result: "red", iteration, mode,
     failed: failures.map((f) => f.kind === "live"
       ? { objective: f.objective, failed_step: f.result.failed_step, remark: f.result.remark }
-      : { path: f.path, failed_step: f.member.failure?.step_index, remark: f.member.failure?.message, heading: f.heading }),
+      : { path: f.path, failed_step: f.member.failure?.step_index, remark: f.member.failure?.message, heading: f.heading, screenshot: f.screenshots?.[f.screenshots.length - 1] }),
   });
   const output: Json = agent === "claude" ? { decision: "block", reason: message } : { followup_message: message };
   return { result: "red", iteration, mode, failures, output, message };

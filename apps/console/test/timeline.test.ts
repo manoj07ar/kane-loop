@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, it, expect } from "vitest";
 import sample from "../public/sample-loop.jsonl?raw";
-import { buildTimeline, parseJsonl } from "../src/timeline";
+import { buildTimeline, parseJsonl, screenshotUrl } from "../src/timeline";
 
 describe("buildTimeline", () => {
   it("groups runs under the loop iteration they led to (red then green)", () => {
@@ -41,5 +41,20 @@ describe("buildTimeline", () => {
     const t = buildTimeline(evs);
     expect(t.state).toBe("gave_up");
     expect(t.iterations[0].reason).toBe("max_iterations");
+  });
+});
+
+describe("screenshotUrl", () => {
+  it("routes live screenshots through /artifact and keeps the failure screenshot on the iteration", () => {
+    const t = buildTimeline([{ ts: "a", type: "loop_iteration", result: "red", iteration: 1, failed: [{ path: "x_test.md", screenshot: ".testmuai/evidence/s 4.png" }] }]);
+    expect(screenshotUrl(t.iterations[0].failed[0].screenshot, false)).toBe("/artifact?path=.testmuai%2Fevidence%2Fs%204.png");
+  });
+  it("rejects non-images and unsafe replay paths", () => {
+    expect(screenshotUrl("/etc/passwd", false)).toBeUndefined();
+    expect(screenshotUrl(42, false)).toBeUndefined();
+    expect(screenshotUrl("../secret.png", true)).toBeUndefined();
+    expect(screenshotUrl("/abs/shot.png", true)).toBeUndefined();
+    expect(screenshotUrl("shots/fail.png", true)).toBe("shots/fail.png");
+    expect(screenshotUrl("https://example.test/s.png", true)).toBe("https://example.test/s.png");
   });
 });

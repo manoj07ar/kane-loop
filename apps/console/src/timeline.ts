@@ -22,7 +22,7 @@ export interface Iteration {
   source?: string;
   mode?: string;
   reason?: string;
-  failed: { objective?: string; path?: string; failed_step?: unknown; remark?: unknown; heading?: unknown }[];
+  failed: { objective?: string; path?: string; failed_step?: unknown; remark?: unknown; heading?: unknown; screenshot?: unknown }[];
   runs: Run[];
 }
 
@@ -114,4 +114,13 @@ export function parseJsonl(text: string): Json[] {
     try { out.push(JSON.parse(t) as Json); } catch { /* torn line */ }
   }
   return out;
+}
+
+const IMAGE = /\.(png|jpe?g|webp|gif)$/i;
+
+/** URL the console can load a failure screenshot from, or undefined if the path isn't a safe image. */
+export function screenshotUrl(path: unknown, replay: boolean): string | undefined {
+  if (typeof path !== "string" || !IMAGE.test(path) || path.includes("\0")) return undefined;
+  if (replay) return /^https?:\/\//.test(path) || (!path.startsWith("/") && !path.includes("..")) ? path : undefined;
+  return `/artifact?path=${encodeURIComponent(path)}`;
 }

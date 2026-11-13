@@ -152,7 +152,10 @@ describe("replay mode (saved flows)", () => {
     expect(msg).toContain('Saved flow flows/settle_test.md: step 4 ("Verify total is 100.00") failed: Total shows 99.99, expected 100.00');
     expect(msg).toContain("Rounded each share down");
     expect(msg).toContain("/tmp/s4.png");
-    expect(computeStatus(await readEvents(dir)).state).toBe("red");
+    const evs = await readEvents(dir);
+    const red = evs.find((e) => e.type === "loop_iteration" && e.result === "red") as { failed?: { screenshot?: string }[] } | undefined;
+    expect(red?.failed?.[0]?.screenshot).toBe("/tmp/s4.png");
+    expect(computeStatus(evs).state).toBe("red");
   });
 
   it("doesn't loop when the replay can't start", async () => {

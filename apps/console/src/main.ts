@@ -1,5 +1,5 @@
 import "./style.css";
-import { buildTimeline, parseJsonl, type Json, type Run, type Timeline } from "./timeline";
+import { buildTimeline, parseJsonl, screenshotUrl, type Json, type Run, type Timeline } from "./timeline";
 
 const events: Json[] = [];
 
@@ -51,6 +51,13 @@ function render(t: Timeline) {
     for (const f of it.failed) {
       const where = f.path ?? f.objective ?? "flow";
       box.append(el("div", "remark", `→ agent told: ${where}${f.failed_step !== undefined ? ` step ${String(f.failed_step)}` : ""}${f.heading ? ` (${String(f.heading)})` : ""}: ${String(f.remark ?? "")}`));
+      const shot = screenshotUrl(f.screenshot, replayMode);
+      if (shot) {
+        const img = el("img", "shot");
+        img.src = shot; img.alt = `Kane screenshot at the failing step of ${where}`; img.loading = "lazy";
+        img.onerror = () => img.replaceWith(el("div", "muted", `screenshot not available: ${String(f.screenshot)}`));
+        box.append(img);
+      }
     }
     blocks.push(box);
   });
@@ -59,9 +66,10 @@ function render(t: Timeline) {
   root.replaceChildren(...blocks.reverse()); // newest first
 }
 
-const refresh = () => render(buildTimeline(events));
 const params = new URLSearchParams(location.search);
 const replay = params.get("replay");
+const replayMode = replay !== null;
+const refresh = () => render(buildTimeline(events));
 const source = document.getElementById("source")!;
 
 if (replay !== null) {

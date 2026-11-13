@@ -24,3 +24,4 @@ h1 { font-size: 22px; margin: 0; } h1 span { color: #8a8f98; font-weight: 400; }
 .step.failed, .step.fail, .step.error { background: #3d1518; color: #ff7a7f; }
 .remark { margin-top: 8px; font-size: 13px; color: #ffb3b6; }
 a { color: #7fb4ff; }
+.shot { display: block; max-width: 100%; max-height: 360px; margin-top: 8px; border-radius: 8px; border: 1px solid #3d1518; }
