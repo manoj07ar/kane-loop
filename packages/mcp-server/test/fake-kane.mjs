@@ -3,6 +3,11 @@
 const scenario = process.env.FAKE_KANE_SCENARIO ?? "pass";
 const out = (o) => process.stdout.write(JSON.stringify(o) + "\n");
 const base = { test_url: "https://test-manager.example/run/123", session_dir: "/tmp/fake-session" };
+if (process.argv[2] === "--version") { process.stdout.write("0.10.3\n"); process.exit(0); }
+if (process.argv[2] === "balance") {
+  if (scenario === "noauth") { process.stdout.write('Not authenticated [prod]. Run "kane-cli login" first.\n'); process.exit(0); }
+  process.stdout.write(scenario === "broke" ? "Balance: 0 credits\n" : "Balance: 9,840 credits\n"); process.exit(0);
+}
 out({ type: "argv", argv: process.argv.slice(2) });
 if (process.argv[2] === "testrun") {
   const log = process.env.FAKE_KANE_LOG ?? "/tmp/fake-member.ndjson";

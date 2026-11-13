@@ -1,16 +1,25 @@
 #!/usr/bin/env node
 // Usage: kane-loop init [--url http://localhost:5173] [--max 3] [--dry-run] [--dir path]
+//        kane-loop doctor [--dir path] [--no-url]
 import { resolve } from "node:path";
 import { runInit } from "./init.js";
+import { formatChecks, runDoctor } from "./doctor.js";
 
 const args = process.argv.slice(2);
 const cmd = args.shift();
-if (cmd !== "init") {
-  process.stderr.write("usage: kane-loop init [--url <app url>] [--max <iterations>] [--dry-run] [--dir <repo>]\n");
+if (cmd !== "init" && cmd !== "doctor") {
+  process.stderr.write("usage: kane-loop init [--url <app url>] [--max <iterations>] [--dry-run] [--dir <repo>]\n       kane-loop doctor [--dir <repo>] [--no-url]\n");
   process.exit(64);
 }
 const flag = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
 const dir = resolve(flag("--dir") ?? process.cwd());
+if (cmd === "doctor") {
+  const checks = await runDoctor(dir, { checkUrl: !args.includes("--no-url") });
+  process.stdout.write(formatChecks(checks) + "\n");
+  const failed = checks.filter((c) => c.level === "fail").length;
+  process.stdout.write(failed ? `\n${failed} problem(s) to fix before the loop can run.\n` : "\nReady: the agent can't stop until Kane is green.\n");
+  process.exit(failed ? 1 : 0);
+}
 const max = flag("--max") ? Number(flag("--max")) : undefined;
 if (max !== undefined && (!Number.isInteger(max) || max < 1)) { process.stderr.write("--max must be a positive integer\n"); process.exit(64); }
 try {

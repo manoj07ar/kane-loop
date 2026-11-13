@@ -10,7 +10,7 @@ An MCP server that gives any agent a `verify_with_kane` tool, backed by [Kane CL
 - `packages/mcp-server`: MCP server (stdio). Tools: `verify_with_kane(url, objective, name?, timeout?)` and `loop_status()` (green/red/verifying, red iteration count, last result, all read from the event log).
 - `kane-loop-hook <claude|cursor>`: stop hook. After every agent turn it replays the repo's saved Kane flows (`.testmuai/tests/*_test.md`, via `kane-cli testrun run`, 0 credits) or, if there are none yet, re-runs the live flows in `.kane-loop.json`. Set `"replay": { "paths": [...], "match": "...", "tags": [...] }` to choose which saved flows run, or `"replay": false` to force live runs. Green lets the agent stop. Red blocks the stop and hands the agent Kane's failing-step remark as its next instruction (Claude Code `decision: block`, Cursor `followup_message`), up to `maxIterations` (default 3). If Kane can't start (login or credits), it reports that and doesn't loop.
 - `apps/demo`: Splitly, the bill-splitter the agent works on.
-- `apps/console`: placeholder for the live Loop Console.
+- `apps/console`: the Loop Console, a live timeline of agent turns and Kane runs (SSE), plus a read-only replay mode.
 
 ## Wire up the loop
 
@@ -18,7 +18,13 @@ One command in the repo you're working on:
 ```
 npx kane-loop init --url http://localhost:5173
 ```
-It adds the MCP server for Cursor (`.cursor/mcp.json`) and Claude Code (`.mcp.json`), both stop hooks, a starter `.kane-loop.json`, a Kane Loop section in `AGENTS.md` and `.gitignore` entries. It merges into existing configs, never overwrites your `.kane-loop.json`, and is safe to re-run (`--dry-run` previews). Or wire it by hand:
+It adds the MCP server for Cursor (`.cursor/mcp.json`) and Claude Code (`.mcp.json`), both stop hooks, a starter `.kane-loop.json`, a Kane Loop section in `AGENTS.md` and `.gitignore` entries. It merges into existing configs, never overwrites your `.kane-loop.json`, and is safe to re-run (`--dry-run` previews). Then check everything is ready before your agent's first turn:
+```
+npx kane-loop doctor
+```
+It checks that kane-cli is installed and logged in, that you have credits, that `.kane-loop.json` has flows (and counts saved flows, which replay for 0 credits), that the stop hooks and MCP server are wired, and that your app URL answers. It exits 1 with a fix for each problem, so it also works as a CI or pre-demo gate (`--no-url` skips the app check).
+
+Or wire it by hand:
 
 `.kane-loop.json` in the repo you're working on:
 ```json
