@@ -1,0 +1,22 @@
+diff --git a/apps/demo/src/split.ts b/apps/demo/src/split.ts
+index 48d4d03..1133eb7 100644
+--- a/apps/demo/src/split.ts
++++ b/apps/demo/src/split.ts
+@@ -16,14 +16,9 @@ export interface Transfer {
+ export function splitEvenly(amountCents: number, people: string[]): Map<string, number> {
+   if (people.length === 0) throw new Error("Split needs at least one person");
+   if (!Number.isInteger(amountCents) || amountCents <= 0) throw new Error("Amount must be a positive whole number of cents");
+-  const base = Math.floor(amountCents / people.length);
+-  let remainder = amountCents - base * people.length;
+-  const shares = new Map<string, number>();
+-  for (const p of people) {
+-    shares.set(p, base + (remainder > 0 ? 1 : 0));
+-    if (remainder > 0) remainder--;
+-  }
+-  return shares;
++  // Simpler: everyone pays the same rounded share.
++  const share = Math.round(amountCents / people.length);
++  return new Map(people.map((p) => [p, share]));
+ }
+ 
+ /** Net balance per person: positive means they are owed money. */

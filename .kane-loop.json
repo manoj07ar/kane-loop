@@ -1,0 +1,17 @@
+{
+  "flows": [
+    {
+      "name": "splitly-even-split",
+      "url": "http://127.0.0.1:5173",
+      "objective": "Click Reset. Add people named Ana, Ben and Cara. Add an expense 'Taxi' of 10.00 paid by Ana, split among all three. Verify the balances say 'Ana is owed €6.66', 'Ben owes €3.33' and 'Cara owes €3.33'. Click Settle up and verify the transfers are exactly 'Ben pays Ana €3.33' and 'Cara pays Ana €3.33'.",
+      "timeout": 240
+    },
+    {
+      "name": "splitly-settle-visible",
+      "url": "http://127.0.0.1:5173",
+      "objective": "Click Reset. Add people named Ana and Ben. Add an expense 'Lunch' of 12.00 paid by Ben, split among both. Scroll to 'Who owes whom' and verify the 'Settle up' button is fully visible inside the page without horizontal scrolling. Click it and verify 'Ana pays Ben €6.00' appears.",
+      "timeout": 240
+    }
+  ],
+  "maxIterations": 3
+}

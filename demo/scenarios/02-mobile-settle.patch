@@ -1,0 +1,11 @@
+diff --git a/apps/demo/src/style.css b/apps/demo/src/style.css
+index 3a12384..22518af 100644
+--- a/apps/demo/src/style.css
++++ b/apps/demo/src/style.css
+@@ -14,3 +14,6 @@ fieldset { border: 1px dashed #d0d7de; border-radius: 6px; display: flex; flex-w
+ ul { padding-left: 18px; }
+ .owed { color: #1a7f37; }
+ .owes { color: #cf222e; }
++/* Wider layout for the balances table */
++section[aria-labelledby="settle-h"] { min-width: 720px; overflow: hidden; white-space: nowrap; }
++#settle-btn { margin-left: 480px; }
