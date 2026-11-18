@@ -4,15 +4,20 @@ import sample from "../public/sample-loop.jsonl?raw";
 import { buildTimeline, parseJsonl, screenshotUrl } from "../src/timeline";
 
 describe("buildTimeline", () => {
-  it("groups runs under the loop iteration they led to (red then green)", () => {
-    const t = buildTimeline(parseJsonl(sample));
-    expect(t.iterations.map((i) => i.result)).toEqual(["red", "green"]);
-    expect(t.iterations[0].runs).toHaveLength(1);
-    expect(t.iterations[0].runs[0].status).toBe("fail");
-    expect(t.iterations[0].runs[0].steps.map((s) => s.status)).toEqual(["passed", "passed", "passed", "failed"]);
-    expect(t.iterations[0].failed[0].failed_step).toBe(4);
+  it("folds the bundled REAL recorded loop (kane-cli 0.10.3, 18 Nov 2026): live save, red replay, green, 0-credit replay", () => {
+    const evs = parseJsonl(sample);
+    expect(evs[0]).toMatchObject({ type: "note", real: true });
+    expect(evs.some((e) => (e as { example?: boolean }).example)).toBe(false);
+    const t = buildTimeline(evs);
+    expect(t.iterations.map((i) => i.result)).toEqual(["red", "green", "green"]);
+    // the manual verify_with_kane run that saved the flow, then the stop hook's red replay of it
+    expect(t.iterations[0].runs.map((r) => [r.kind, r.status])).toEqual([["verify", "pass"], ["replay", "fail"]]);
+    expect(t.iterations[0].runs[0].label).toBe("splitly-even-split");
+    expect(t.iterations[0].runs[0].steps.length).toBeGreaterThan(10);
+    expect(String(t.iterations[0].failed[0].remark)).toContain("assertion failed: the balances say 'Ana is owed €6.66'");
+    expect(screenshotUrl(t.iterations[0].failed[0].screenshot, true)).toBe("real-loop-2026-11-18/step_020.png");
     expect(t.state).toBe("green");
-    expect([t.passes, t.fails]).toEqual([1, 1]);
+    expect([t.passes, t.fails]).toEqual([3, 1]);
     expect(t.pending).toEqual([]);
   });
 

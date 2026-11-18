@@ -5,3 +5,4 @@ dist
 .testmuai/variables/
 *.log
 .env
+.testmuai/tests/output-*/

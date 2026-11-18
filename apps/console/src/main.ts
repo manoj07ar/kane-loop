@@ -76,7 +76,7 @@ if (replay !== null) {
   // Read-only replay of a recorded events.jsonl, so judges see a full loop without credentials.
   const url = replay || "sample-loop.jsonl";
   const speed = Number(params.get("speed") ?? 8);
-  source.textContent = `Replaying ${url} at ${speed}x${replay ? "" : " (example data, not a real Kane run)"}`;
+  source.textContent = `Replaying ${url} at ${speed}x${replay ? "" : " (a real recorded Kane CLI loop, 18 Nov 2026)"}`;
   fetch(url).then((r) => r.text()).then(async (text) => {
     const all = parseJsonl(text);
     for (let i = 0; i < all.length; i++) {

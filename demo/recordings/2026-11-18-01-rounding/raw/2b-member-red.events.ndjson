@@ -1,0 +1,111 @@
+{"type":"test_md_step_start","step_index":1,"heading":"Step 1","ref":null,"v":1,"ts":"2026-11-18T14:59:28.369Z"}
+{"type":"run_start","objective":"Click Reset. Add people named Ana, Ben and Cara. Add an expense 'Taxi' of 10.00 paid by Ana, split among all three. Verify the balances say 'Ana is owed €6.66', 'Ben owes €3.33' and 'Cara owes €3.33'. Click Settle up and verify the transfers are exactly 'Ben pays Ana €3.33' and 'Cara pays Ana €3.33'.","timestamp":1795013968,"environment":{"resolution":"1920x1080"},"v":1,"ts":"2026-11-18T14:59:28.394Z"}
+{"type":"step_event","index":0,"event":"replay_started","detail":"replaying 25 actions","recording_length":25,"v":1,"ts":"2026-11-18T14:59:28.394Z"}
+{"type":"step_start","index":1,"objective":"Step 1","v":1,"ts":"2026-11-18T14:59:28.395Z"}
+{"type":"step_event","index":1,"event":"screenshot","detail":"chrome://new-tab-page/","v":1,"ts":"2026-11-18T14:59:28.501Z"}
+{"type":"step_event","index":1,"event":"action","detail":"Navigate to http://127.0.0.1:5173","action_type":"navigate","success":true,"v":1,"ts":"2026-11-18T14:59:28.575Z"}
+{"type":"step_event","index":1,"event":"reasoning","detail":"Navigate to http://127.0.0.1:5173","action_type":"navigate","v":1,"ts":"2026-11-18T14:59:28.575Z"}
+{"type":"step_end","index":1,"status":"passed","duration":0.2,"summary":"navigate: Navigate to http://127.0.0.1:5173","ordinal":1,"id":"0-1","kind":"navigate","screenshot":"screenshot.jpg","action_id":"4e8a55db-12f7-42a5-abdb-023555ec214d","v":1,"ts":"2026-11-18T14:59:28.575Z"}
+{"type":"step_start","index":2,"objective":"Step 2","v":1,"ts":"2026-11-18T14:59:28.575Z"}
+{"type":"step_event","index":2,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:28.679Z"}
+{"type":"step_event","index":2,"event":"action","detail":"Clicking Reset button in the bottom of the Splitly panel","action_type":"click","success":true,"v":1,"ts":"2026-11-18T14:59:29.240Z"}
+{"type":"step_event","index":2,"event":"reasoning","detail":"Clicking Reset button in the bottom of the Splitly panel","action_type":"click","v":1,"ts":"2026-11-18T14:59:29.240Z"}
+{"type":"step_end","index":2,"status":"passed","duration":0.7,"summary":"click: Clicking Reset button in the bottom of the Splitly panel","ordinal":2,"id":"0-2","kind":"click","screenshot":"screenshot.jpg","action_id":"05398628-9e5b-42b9-8ad5-cc50168aced5","v":1,"ts":"2026-11-18T14:59:29.323Z"}
+{"type":"step_start","index":3,"objective":"Step 3","v":1,"ts":"2026-11-18T14:59:29.324Z"}
+{"type":"step_event","index":3,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:29.397Z"}
+{"type":"step_event","index":3,"event":"action","detail":"Typing Ana in the Name field","action_type":"fill","success":true,"v":1,"ts":"2026-11-18T14:59:29.472Z"}
+{"type":"step_event","index":3,"event":"reasoning","detail":"Typing Ana in the Name field","action_type":"fill","v":1,"ts":"2026-11-18T14:59:29.472Z"}
+{"type":"step_end","index":3,"status":"passed","duration":0.1,"summary":"fill: Typing Ana in the Name field","ordinal":3,"id":"0-3","kind":"fill","screenshot":"screenshot.jpg","action_id":"6a89fee1-1626-4ebb-bd1f-6e562ec4b4a6","v":1,"ts":"2026-11-18T14:59:29.544Z"}
+{"type":"step_start","index":4,"objective":"Step 4","v":1,"ts":"2026-11-18T14:59:29.544Z"}
+{"type":"step_event","index":4,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:29.612Z"}
+{"type":"step_event","index":4,"event":"action","detail":"Clicking Add person for Ana, Ben and Cara","action_type":"click","success":true,"v":1,"ts":"2026-11-18T14:59:30.155Z"}
+{"type":"step_event","index":4,"event":"reasoning","detail":"Clicking Add person for Ana, Ben and Cara","action_type":"click","v":1,"ts":"2026-11-18T14:59:30.156Z"}
+{"type":"step_end","index":4,"status":"passed","duration":0.6,"summary":"click: Clicking Add person for Ana, Ben and Cara","ordinal":4,"id":"0-4","kind":"click","screenshot":"screenshot.jpg","action_id":"701cee82-2440-49fa-be0f-722e68106838","v":1,"ts":"2026-11-18T14:59:30.219Z"}
+{"type":"step_start","index":5,"objective":"Step 5","v":1,"ts":"2026-11-18T14:59:30.220Z"}
+{"type":"step_event","index":5,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:30.296Z"}
+{"type":"step_event","index":5,"event":"action","detail":"Waiting for the next step in the plan","action_type":"wait","success":true,"v":1,"ts":"2026-11-18T14:59:31.304Z"}
+{"type":"step_event","index":5,"event":"reasoning","detail":"Waiting for the next step in the plan","action_type":"wait","v":1,"ts":"2026-11-18T14:59:31.304Z"}
+{"type":"step_end","index":5,"status":"passed","duration":1.1,"summary":"wait: Waiting for the next step in the plan","ordinal":5,"id":"0-5","kind":"wait","screenshot":"screenshot.jpg","action_id":"2b1eb201-417a-4b88-8c19-6da1671ac270","v":1,"ts":"2026-11-18T14:59:31.304Z"}
+{"type":"step_start","index":6,"objective":"Step 6","v":1,"ts":"2026-11-18T14:59:31.304Z"}
+{"type":"step_event","index":6,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:31.380Z"}
+{"type":"step_event","index":6,"event":"action","detail":"Type \"Ben\" into \"Name\"","action_type":"fill","success":true,"v":1,"ts":"2026-11-18T14:59:31.457Z"}
+{"type":"step_event","index":6,"event":"reasoning","detail":"Type \"Ben\" into \"Name\"","action_type":"fill","v":1,"ts":"2026-11-18T14:59:31.457Z"}
+{"type":"step_end","index":6,"status":"passed","duration":0.2,"summary":"fill: Type \"Ben\" into \"Name\"","ordinal":6,"id":"0-6","kind":"fill","screenshot":"screenshot.jpg","action_id":"688c3063-c1b3-4db1-b7bd-472597a9f0fe","v":1,"ts":"2026-11-18T14:59:31.524Z"}
+{"type":"step_start","index":7,"objective":"Step 7","v":1,"ts":"2026-11-18T14:59:31.525Z"}
+{"type":"step_event","index":7,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:31.594Z"}
+{"type":"step_event","index":7,"event":"action","detail":"Click \"Add person\"","action_type":"click","success":true,"v":1,"ts":"2026-11-18T14:59:32.138Z"}
+{"type":"step_event","index":7,"event":"reasoning","detail":"Click \"Add person\"","action_type":"click","v":1,"ts":"2026-11-18T14:59:32.138Z"}
+{"type":"step_end","index":7,"status":"passed","duration":0.6,"summary":"click: Click \"Add person\"","ordinal":7,"id":"0-7","kind":"click","screenshot":"screenshot.jpg","action_id":"3902531e-d83b-4e99-a688-c45c78a6655c","v":1,"ts":"2026-11-18T14:59:32.202Z"}
+{"type":"step_start","index":8,"objective":"Step 8","v":1,"ts":"2026-11-18T14:59:32.202Z"}
+{"type":"step_event","index":8,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:32.261Z"}
+{"type":"step_event","index":8,"event":"action","detail":"Waiting for the plan to finish adding the person","action_type":"wait","success":true,"v":1,"ts":"2026-11-18T14:59:33.269Z"}
+{"type":"step_event","index":8,"event":"reasoning","detail":"Waiting for the plan to finish adding the person","action_type":"wait","v":1,"ts":"2026-11-18T14:59:33.269Z"}
+{"type":"step_end","index":8,"status":"passed","duration":1.1,"summary":"wait: Waiting for the plan to finish adding the person","ordinal":8,"id":"0-8","kind":"wait","screenshot":"screenshot.jpg","action_id":"a8dbf44b-b2ae-4066-ae8a-a5864c13adc9","v":1,"ts":"2026-11-18T14:59:33.270Z"}
+{"type":"step_start","index":9,"objective":"Step 9","v":1,"ts":"2026-11-18T14:59:33.270Z"}
+{"type":"step_event","index":9,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:33.347Z"}
+{"type":"step_event","index":9,"event":"action","detail":"Type \"Cara\" into \"Name\"","action_type":"fill","success":true,"v":1,"ts":"2026-11-18T14:59:33.415Z"}
+{"type":"step_event","index":9,"event":"reasoning","detail":"Type \"Cara\" into \"Name\"","action_type":"fill","v":1,"ts":"2026-11-18T14:59:33.415Z"}
+{"type":"step_end","index":9,"status":"passed","duration":0.1,"summary":"fill: Type \"Cara\" into \"Name\"","ordinal":9,"id":"0-9","kind":"fill","screenshot":"screenshot.jpg","action_id":"09b4bd08-cb9b-4724-8c9b-b02ddfd3f88e","v":1,"ts":"2026-11-18T14:59:33.480Z"}
+{"type":"step_start","index":10,"objective":"Step 10","v":1,"ts":"2026-11-18T14:59:33.480Z"}
+{"type":"step_event","index":10,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:33.549Z"}
+{"type":"step_event","index":10,"event":"action","detail":"Click \"Add person\"","action_type":"click","success":true,"v":1,"ts":"2026-11-18T14:59:34.088Z"}
+{"type":"step_event","index":10,"event":"reasoning","detail":"Click \"Add person\"","action_type":"click","v":1,"ts":"2026-11-18T14:59:34.088Z"}
+{"type":"step_end","index":10,"status":"passed","duration":0.6,"summary":"click: Click \"Add person\"","ordinal":10,"id":"0-10","kind":"click","screenshot":"screenshot.jpg","action_id":"0aa34a84-d0e4-416d-96b1-0445d38f15ea","v":1,"ts":"2026-11-18T14:59:34.157Z"}
+{"type":"step_start","index":11,"objective":"Step 11","v":1,"ts":"2026-11-18T14:59:34.157Z"}
+{"type":"step_event","index":11,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:34.228Z"}
+{"type":"step_event","index":11,"event":"action","detail":"Selecting Ana as the payer for the taxi expense","action_type":"select","success":true,"v":1,"ts":"2026-11-18T14:59:34.257Z"}
+{"type":"step_event","index":11,"event":"reasoning","detail":"Selecting Ana as the payer for the taxi expense","action_type":"select","v":1,"ts":"2026-11-18T14:59:34.257Z"}
+{"type":"step_end","index":11,"status":"passed","duration":0.1,"summary":"select: Selecting Ana as the payer for the taxi expense","ordinal":11,"id":"0-11","kind":"select","screenshot":"screenshot.jpg","action_id":"f8a8d15a-f9fa-40f4-897e-7e65e39d5b24","v":1,"ts":"2026-11-18T14:59:34.324Z"}
+{"type":"step_start","index":12,"objective":"Step 12","v":1,"ts":"2026-11-18T14:59:34.324Z"}
+{"type":"step_event","index":12,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:34.395Z"}
+{"type":"step_event","index":12,"event":"action","detail":"Waiting for the plan steps to finish processing","action_type":"wait","success":true,"v":1,"ts":"2026-11-18T14:59:35.402Z"}
+{"type":"step_event","index":12,"event":"reasoning","detail":"Waiting for the plan steps to finish processing","action_type":"wait","v":1,"ts":"2026-11-18T14:59:35.402Z"}
+{"type":"step_end","index":12,"status":"passed","duration":1.1,"summary":"wait: Waiting for the plan steps to finish processing","ordinal":12,"id":"0-12","kind":"wait","screenshot":"screenshot.jpg","action_id":"22ae0059-c7f8-413a-ac1a-f7ddc2827558","v":1,"ts":"2026-11-18T14:59:35.402Z"}
+{"type":"step_start","index":13,"objective":"Step 13","v":1,"ts":"2026-11-18T14:59:35.402Z"}
+{"type":"step_event","index":13,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:35.480Z"}
+{"type":"step_event","index":13,"event":"action","detail":"Type \"Taxi\" into \"Description\"","action_type":"fill","success":true,"v":1,"ts":"2026-11-18T14:59:35.551Z"}
+{"type":"step_event","index":13,"event":"reasoning","detail":"Type \"Taxi\" into \"Description\"","action_type":"fill","v":1,"ts":"2026-11-18T14:59:35.552Z"}
+{"type":"step_end","index":13,"status":"passed","duration":0.1,"summary":"fill: Type \"Taxi\" into \"Description\"","ordinal":13,"id":"0-13","kind":"fill","screenshot":"screenshot.jpg","action_id":"e55948b5-8bf9-47c7-b8f8-ec34dea4ac19","v":1,"ts":"2026-11-18T14:59:35.622Z"}
+{"type":"step_start","index":14,"objective":"Step 14","v":1,"ts":"2026-11-18T14:59:35.622Z"}
+{"type":"step_event","index":14,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:35.697Z"}
+{"type":"step_event","index":14,"event":"action","detail":"Type \"10.00\" into \"Amount (€)\"","action_type":"fill","success":true,"v":1,"ts":"2026-11-18T14:59:35.812Z"}
+{"type":"step_event","index":14,"event":"reasoning","detail":"Type \"10.00\" into \"Amount (€)\"","action_type":"fill","v":1,"ts":"2026-11-18T14:59:35.812Z"}
+{"type":"step_end","index":14,"status":"passed","duration":0.2,"summary":"fill: Type \"10.00\" into \"Amount (€)\"","ordinal":14,"id":"0-14","kind":"fill","screenshot":"screenshot.jpg","action_id":"486fe428-bd8b-4225-8795-041ee21145b5","v":1,"ts":"2026-11-18T14:59:35.880Z"}
+{"type":"step_start","index":15,"objective":"Step 15","v":1,"ts":"2026-11-18T14:59:35.881Z"}
+{"type":"step_event","index":15,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:35.951Z"}
+{"type":"step_event","index":15,"event":"action","detail":"Click \"Add expense\"","action_type":"click","success":true,"v":1,"ts":"2026-11-18T14:59:36.490Z"}
+{"type":"step_event","index":15,"event":"reasoning","detail":"Click \"Add expense\"","action_type":"click","v":1,"ts":"2026-11-18T14:59:36.490Z"}
+{"type":"step_end","index":15,"status":"passed","duration":0.6,"summary":"click: Click \"Add expense\"","ordinal":15,"id":"0-15","kind":"click","screenshot":"screenshot.jpg","action_id":"96be1f20-4afe-408a-a97d-b39ed9fca449","v":1,"ts":"2026-11-18T14:59:36.560Z"}
+{"type":"step_start","index":16,"objective":"Step 16","v":1,"ts":"2026-11-18T14:59:36.560Z"}
+{"type":"step_event","index":16,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:36.628Z"}
+{"type":"step_event","index":16,"event":"action","detail":"Confirming the added Taxi expense and updated balances","action_type":"wait","success":true,"v":1,"ts":"2026-11-18T14:59:36.834Z"}
+{"type":"step_event","index":16,"event":"reasoning","detail":"Confirming the added Taxi expense and updated balances","action_type":"wait","v":1,"ts":"2026-11-18T14:59:36.834Z"}
+{"type":"step_end","index":16,"status":"passed","duration":0.3,"summary":"wait: Confirming the added Taxi expense and updated balances","ordinal":16,"id":"0-16","kind":"wait","screenshot":"screenshot.jpg","action_id":"21135166-b3fa-435a-829b-cef3def23827","v":1,"ts":"2026-11-18T14:59:36.835Z"}
+{"type":"step_start","index":17,"objective":"Step 17","v":1,"ts":"2026-11-18T14:59:36.835Z"}
+{"type":"step_event","index":17,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:36.897Z"}
+{"type":"step_event","index":17,"event":"action","detail":"Checking whether Ana's balance statement is present","action_type":"analyze","success":true,"v":1,"ts":"2026-11-18T14:59:52.356Z"}
+{"type":"step_event","index":17,"event":"reasoning","detail":"Checking whether Ana's balance statement is present","action_type":"analyze","v":1,"ts":"2026-11-18T14:59:52.356Z"}
+{"type":"step_end","index":17,"status":"passed","duration":15.5,"summary":"analyze: Checking whether Ana's balance statement is present","ordinal":17,"id":"0-17","kind":"analyze","screenshot":"screenshot.jpg","action_id":"dc8fc316-03d1-4d0a-89e5-cbd69148d934","v":1,"ts":"2026-11-18T14:59:52.357Z"}
+{"type":"step_start","index":18,"objective":"Step 18","v":1,"ts":"2026-11-18T14:59:52.357Z"}
+{"type":"step_event","index":18,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:52.431Z"}
+{"type":"step_event","index":18,"event":"action","detail":"Checking whether Ben's balance statement is present","action_type":"analyze","success":true,"v":1,"ts":"2026-11-18T14:59:52.453Z"}
+{"type":"step_event","index":18,"event":"reasoning","detail":"Checking whether Ben's balance statement is present","action_type":"analyze","v":1,"ts":"2026-11-18T14:59:52.453Z"}
+{"type":"step_end","index":18,"status":"passed","duration":0.1,"summary":"analyze: Checking whether Ben's balance statement is present","ordinal":18,"id":"0-18","kind":"analyze","screenshot":"screenshot.jpg","action_id":"218eddc9-348e-4847-bac7-3ffa58d05388","v":1,"ts":"2026-11-18T14:59:52.454Z"}
+{"type":"step_start","index":19,"objective":"Step 19","v":1,"ts":"2026-11-18T14:59:52.454Z"}
+{"type":"step_event","index":19,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:52.526Z"}
+{"type":"step_event","index":19,"event":"action","detail":"Checking whether Cara's balance statement is present","action_type":"analyze","success":true,"v":1,"ts":"2026-11-18T14:59:52.546Z"}
+{"type":"step_event","index":19,"event":"reasoning","detail":"Checking whether Cara's balance statement is present","action_type":"analyze","v":1,"ts":"2026-11-18T14:59:52.546Z"}
+{"type":"step_end","index":19,"status":"passed","duration":0.1,"summary":"analyze: Checking whether Cara's balance statement is present","ordinal":19,"id":"0-19","kind":"analyze","screenshot":"screenshot.jpg","action_id":"340457bc-71e8-4be3-b6d9-1be532275bee","v":1,"ts":"2026-11-18T14:59:52.546Z"}
+{"type":"step_start","index":20,"objective":"Step 20","v":1,"ts":"2026-11-18T14:59:52.546Z"}
+{"type":"step_event","index":20,"event":"screenshot","detail":"http://127.0.0.1:5173/","v":1,"ts":"2026-11-18T14:59:52.611Z"}
+{"type":"step_event","index":20,"event":"assertion","detail":"the balances say 'Ana is owed €6.66', 'Ben owes €3.33' and 'Cara owes €3.33'","passed":false,"v":1,"ts":"2026-11-18T14:59:52.613Z"}
+{"type":"step_end","index":20,"status":"failed","duration":0.1,"summary":"assert: the balances say 'Ana is owed €6.66', 'Ben owes €3.33' and 'Cara owes €3.33'","ordinal":20,"id":"0-20","kind":"assert","screenshot":"screenshot.jpg","action_id":"f5728ac9-05a8-40d7-b155-7f2964e0f0e3","v":1,"ts":"2026-11-18T14:59:52.614Z"}
+{"type":"run_end","run_id":"run-0","status":"failed","summary":"","reason":"assertion_failed: @ step 20","duration":24.23,"final_url":"http://127.0.0.1:5173/","actions_executed":20,"screenshot_path":"~/.testmuai/kaneai/sessions/169c9460-47d9-41ed-bd28-704aa91844c2/scratch/0/replay-test/screenshots/step_020.png","run_dir":"~/.testmuai/kaneai/sessions/169c9460-47d9-41ed-bd28-704aa91844c2/scratch/0/replay-test","total_runs":1,"context":{"memory":{},"variables":{"ana_owed_6_66_balance":{"syntax":"{{ana_owed_6_66_balance}}","value":"false","secret":false},"ben_owes_3_33_balance":{"syntax":"{{ben_owes_3_33_balance}}","value":"true","secret":false},"cara_owes_3_33_balance":{"syntax":"{{cara_owes_3_33_balance}}","value":"true","secret":false}},"pointer":""},"variables_out":{"ana_owed_6_66_balance":{"syntax":"{{ana_owed_6_66_balance}}","value":"false","secret":false},"ben_owes_3_33_balance":{"syntax":"{{ben_owes_3_33_balance}}","value":"true","secret":false},"cara_owes_3_33_balance":{"syntax":"{{cara_owes_3_33_balance}}","value":"true","secret":false}},"store_out":{},"v":1,"ts":"2026-11-18T14:59:52.619Z"}
+{"type":"test_md_step_end","step_index":1,"status":"failed","duration_s":24.23,"ref_kind":null,"unit_kind":null,"inlined_count":null,"failed_sub_step_index":null,"v":1,"ts":"2026-11-18T14:59:52.620Z"}
+{"type":"test_md_lock_state","phase":"acquired","scope":"mid_run","v":1,"ts":"2026-11-18T14:59:52.705Z"}
+{"type":"test_md_adaptive_heal","shrink_count":1,"final_author_boundary":0,"complete_reauthor":true,"v":1,"ts":"2026-11-18T14:59:52.708Z"}
+{"type":"test_md_step_start","step_index":1,"heading":"Step 1","ref":null,"v":1,"ts":"2026-11-18T14:59:52.708Z"}
+{"type":"run_end","status":"failed","summary":"No start URL provided. Pass --url, set a default URL (config set-url), or name a site in the objective.","one_liner":"","final_state":{},"reason":"No start URL provided. Pass --url, set a default URL (config set-url), or name a site in the objective.","duration":3.8,"bifurcated":false,"total_runs":1,"context":{"memory":{},"variables":{},"pointer":"(failed) No start URL provided. Pass --url, set a default URL (config set-url), or name a site in the objective."},"credits_consumed":0,"session_dir":"~/.testmuai/kaneai/sessions/169c9460-47d9-41ed-bd28-704aa91844c2","run_dir":"~/.testmuai/kaneai/sessions/169c9460-47d9-41ed-bd28-704aa91844c2/runs/0","result_code":null,"reason_code":null,"per_flow_metadata":[{"result_code":null,"reason_code":null,"error_message":"No start URL provided. Pass --url, set a default URL (config set-url), or name a site in the objective.","summary":null,"one_liner":null,"credits_consumed":0}],"run_id":"run-0","v":1,"ts":"2026-11-18T15:00:23.594Z"}
+{"type":"test_md_step_end","step_index":1,"status":"failed","duration_s":3.8,"ref_kind":null,"unit_kind":null,"inlined_count":null,"failed_sub_step_index":null,"v":1,"ts":"2026-11-18T15:00:23.595Z"}
+{"type":"test_md_summary","overall_status":"failed","duration_s":59,"steps":{"total":1,"passed":0,"failed":1,"skipped":0,"replay_decisions":1,"author_decisions":0},"adaptive_heal":{"triggered":true},"commit":{"committed":false,"reason":"run_failed"},"artifacts":{"replaced":true},"upload":{"performed":true,"succeeded":true},"cancelled":false,"v":1,"ts":"2026-11-18T15:00:25.659Z"}
+{"type":"test_md_done","overall_status":"failed","duration_s":59,"session_id":"169c9460-47d9-41ed-bd28-704aa91844c2","v":1,"ts":"2026-11-18T15:00:25.659Z"}
