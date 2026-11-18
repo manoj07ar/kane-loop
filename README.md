@@ -2,9 +2,13 @@
 
 > Your coding agent can't say "done" until Kane says green.
 
-Work in progress for the Kane CLI Online Hackathon (12–19 Nov 2026).
+Built for the Kane CLI Online Hackathon (12–26 Nov 2026).
 
 An MCP server that gives any agent a `verify_with_kane` tool, backed by [Kane CLI](https://www.testmuai.com/support/docs/kane-cli-introduction).
+
+## Proof: a real recorded loop
+
+[`demo/recordings/2026-11-18-01-rounding`](demo/recordings/2026-11-18-01-rounding) is real Kane CLI 0.10.3 output from 18 Nov 2026, not example data: a live `verify_with_kane` save went green, a seeded rounding bug went red through the Cursor stop hook (Kane's failing step and screenshot were handed to the agent as its next instruction), the reset went green, and a pure replay went green for 0 credits. 76.4 credits for the whole session. The raw event logs, the exact stop-hook follow-up JSON and Kane's screenshots are in that folder, and the Loop Console's replay mode plays this same run.
 
 ## Layout
 - `packages/mcp-server`: MCP server (stdio). Tools: `verify_with_kane(url, objective, name?, timeout?)` and `loop_status()` (green/red/verifying, red iteration count, last result, all read from the event log).
