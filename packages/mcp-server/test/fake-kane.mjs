@@ -9,6 +9,14 @@ if (process.argv[2] === "balance") {
   process.stdout.write(scenario === "broke" ? "Balance: 0 credits\n" : "Balance: 9,840 credits\n"); process.exit(0);
 }
 out({ type: "argv", argv: process.argv.slice(2) });
+if (scenario === "file") {
+  // Replays a recorded real kane-cli NDJSON stream (test/fixtures), filling in the saved test path.
+  const { readFileSync, writeFileSync } = await import("node:fs");
+  const tp = process.env.FAKE_KANE_TEST_PATH ?? "/tmp/fake_test.md";
+  if (process.env.FAKE_KANE_TEST_MD) writeFileSync(tp, process.env.FAKE_KANE_TEST_MD);
+  process.stdout.write(readFileSync(process.env.FAKE_KANE_FILE, "utf8").replaceAll("__TEST_PATH__", tp).replaceAll("__OUTPUT_PATH__", tp + ".out"));
+  process.exit(Number(process.env.FAKE_KANE_EXIT ?? 0));
+}
 if (process.argv[2] === "testrun") {
   const log = process.env.FAKE_KANE_LOG ?? "/tmp/fake-member.ndjson";
   if (scenario === "exit2") { process.stderr.write("Not logged in\n"); process.exit(2); }

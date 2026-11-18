@@ -118,7 +118,7 @@ describe("replay mode (saved flows)", () => {
     await writeFile(join(dir, ".testmuai", "tests", "settle_test.md"), "# Settle\n");
   };
 
-  it("prefers replaying saved flows over live runs and passes the folder to testrun", async () => {
+  it("prefers replaying saved flows over live runs and passes the saved files to testrun (kane-cli rejects folders)", async () => {
     await config();
     await saveFlow();
     process.env.FAKE_KANE_SCENARIO = "pass";
@@ -127,7 +127,7 @@ describe("replay mode (saved flows)", () => {
     expect(r.mode).toBe("replay");
     const events = await readEvents(dir);
     const argv = events.find((e) => (e.event as { type?: string })?.type === "argv")?.event as { argv: string[] } | undefined;
-    expect(argv?.argv.slice(0, 3)).toEqual(["testrun", "run", ".testmuai/tests"]);
+    expect(argv?.argv.slice(0, 4)).toEqual(["testrun", "run", ".testmuai/tests/settle_test.md", "--agent"]);
   });
 
   it("works with saved flows and no live flows in config", async () => {

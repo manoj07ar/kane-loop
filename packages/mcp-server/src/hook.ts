@@ -18,7 +18,7 @@ export interface HookOutcome {
 
 export type HookFailure =
   | { kind: "live"; objective: string; url: string; result: VerifyResult }
-  | { kind: "replay"; path: string; member: ReplayMember; heading?: string; remarks?: string[]; screenshots?: string[] };
+  | { kind: "replay"; path: string; member: ReplayMember; heading?: string; message?: string; remarks?: string[]; screenshots?: string[] };
 
 /** Turns a failed replay member into a hook failure, enriched from its event log when kane-cli wrote one. */
 async function replayFailure(member: ReplayMember): Promise<HookFailure> {
@@ -26,7 +26,7 @@ async function replayFailure(member: ReplayMember): Promise<HookFailure> {
   if (!member.log_path) return f;
   try {
     const d = await getFailure(member.log_path);
-    return { ...f, heading: d.heading, remarks: d.remarks, screenshots: d.screenshots };
+    return { ...f, heading: d.heading, message: d.detail, remarks: d.remarks, screenshots: d.screenshots };
   } catch {
     return f;
   }
@@ -41,8 +41,9 @@ function describeFailure(f: HookFailure): string {
   const m = f.member;
   const step = m.failure?.step_index;
   const where = step !== undefined ? `step ${step}${f.heading ? ` ("${f.heading}")` : ""} failed` : m.status;
-  const extra = f.remarks?.filter((r) => r !== m.failure?.message).slice(-2) ?? [];
-  return `- Saved flow ${f.path}: ${where}${m.failure?.message ? `: ${m.failure.message}` : ""}${extra.length ? `. Kane noted: ${extra.join(" / ")}` : ""}${f.screenshots?.length ? `. Screenshot: ${f.screenshots[f.screenshots.length - 1]}` : ""}${m.log_path ? `. Log: ${m.log_path}` : ""}`;
+  const msg = f.message ?? m.failure?.message;
+  const extra = f.remarks?.filter((r) => r !== msg && !(msg && msg.endsWith(r.replace(/^Assertion failed: /, "")))).slice(-2) ?? [];
+  return `- Saved flow ${f.path}: ${where}${msg ? `: ${msg}` : ""}${extra.length ? `. Kane noted: ${extra.join(" / ")}` : ""}${f.screenshots?.length ? `. Screenshot: ${f.screenshots[f.screenshots.length - 1]}` : ""}${m.log_path ? `. Log: ${m.log_path}` : ""}`;
 }
 
 export function feedback(failures: HookFailure[], iteration: number, max: number): string {
@@ -143,7 +144,7 @@ export async function runStopHook(agent: AgentKind, input: Json, dir: string, op
     type: "loop_iteration", result: "red", iteration, mode,
     failed: failures.map((f) => f.kind === "live"
       ? { objective: f.objective, failed_step: f.result.failed_step, remark: f.result.remark }
-      : { path: f.path, failed_step: f.member.failure?.step_index, remark: f.member.failure?.message, heading: f.heading, screenshot: f.screenshots?.[f.screenshots.length - 1] }),
+      : { path: f.path, failed_step: f.member.failure?.step_index, remark: f.message ?? f.member.failure?.message, heading: f.heading, screenshot: f.screenshots?.[f.screenshots.length - 1] }),
   });
   const output: Json = agent === "claude" ? { decision: "block", reason: message } : { followup_message: message };
   return { result: "red", iteration, mode, failures, output, message };

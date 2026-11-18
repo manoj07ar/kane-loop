@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { readFile, writeFile } from "node:fs/promises";
 import { appendEvent } from "./events.js";
 
 export type VerifyStatus = "pass" | "fail" | "not_started" | "timeout" | "error";
@@ -29,6 +30,8 @@ export interface VerifyResult {
   evidence?: string;
   duration?: number;
   credits_consumed?: number;
+  /** The *_test.md kane-cli saved for --name (from its recording_state event), replayable for 0 LLM credits. */
+  saved_test?: string;
   steps: KaneStep[];
 }
 
@@ -65,6 +68,23 @@ export function slugify(name: string): string {
 
 type Json = Record<string, unknown>;
 
+/**
+ * kane-cli 0.10.3 `run --url X --name N` saves N_test.md without a `url:` frontmatter key (the URL only lives in the
+ * recorded navigate action). When a replay fails, adaptive heal re-authors the flow and then stops with
+ * "No start URL provided", so every later replay of that flow fails for the wrong reason. Pin the start URL.
+ * Returns true when the file was changed.
+ */
+export async function ensureStartUrl(testPath: string, url: string): Promise<boolean> {
+  let text: string;
+  try { text = await readFile(testPath, "utf8"); } catch { return false; }
+  const fm = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(text);
+  if (fm && /^url\s*:/m.test(fm[1]!)) return false;
+  const line = `url: ${JSON.stringify(url)}`;
+  const next = fm ? text.replace(/^---\r?\n/, `---\n${line}\n`) : `---\n${line}\n---\n\n${text}`;
+  await writeFile(testPath, next);
+  return true;
+}
+
 export async function verifyWithKane(input: VerifyInput, opts: RunOptions = {}): Promise<VerifyResult> {
   const bin = opts.bin ?? process.env.KANE_CLI_BIN ?? "kane-cli";
   const eventsDir = opts.eventsDir ?? process.cwd();
@@ -72,6 +92,7 @@ export async function verifyWithKane(input: VerifyInput, opts: RunOptions = {}):
   const args = buildArgs({ ...input, name: input.name ? slugify(input.name) || undefined : undefined });
   const steps: KaneStep[] = [];
   let runEnd: Json | undefined;
+  let testPath: string | undefined;
   let stderr = "";
 
   const emit = (event: Json) => appendEvent(eventsDir, { source: "mcp-server", ...event }).catch(() => {});
@@ -87,6 +108,7 @@ export async function verifyWithKane(input: VerifyInput, opts: RunOptions = {}):
       return; // ignore non-JSON noise
     }
     await emit({ type: "kane_event", event: obj });
+    if (obj.type === "recording_state" && obj.persist === true && typeof obj.test_path === "string") testPath = obj.test_path;
     if (obj.type === "run_end" || (runEnd === undefined && "one_liner" in obj && "final_state" in obj)) {
       runEnd = obj;
     } else if (typeof obj.step === "number" && typeof obj.status === "string") {
@@ -128,6 +150,9 @@ export async function verifyWithKane(input: VerifyInput, opts: RunOptions = {}):
   });
 
   let status = exitCodeToStatus(exitCode);
+  if (testPath && input.name && await ensureStartUrl(testPath, input.url)) {
+    await emit({ type: "saved_flow_url_pinned", path: testPath, url: input.url });
+  }
   const end = runEnd ?? {};
   const failed = [...steps].reverse().find((s) => /fail|error/i.test(s.status));
   const str = (k: string) => (typeof end[k] === "string" ? (end[k] as string) : undefined);
@@ -146,6 +171,7 @@ export async function verifyWithKane(input: VerifyInput, opts: RunOptions = {}):
     evidence: str("session_dir"),
     duration: num("duration"),
     credits_consumed: num("credits_consumed"),
+    saved_test: testPath,
     steps,
   };
   await emit({ type: "verify_end", status: result.status, exit_code: exitCode, failed_step: result.failed_step, remark: result.remark, test_url: result.test_url });

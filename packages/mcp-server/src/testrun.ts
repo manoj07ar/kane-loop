@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
+import { isAbsolute, join, resolve } from "node:path";
 import { appendEvent } from "./events.js";
 import type { RunOptions } from "./kane.js";
 
@@ -51,6 +52,36 @@ export function buildReplayArgs(input: ReplayInput): string[] {
   return args;
 }
 
+/**
+ * kane-cli 0.10.x `testrun run` only takes *_test.md files ("error: not a *_test.md file: .testmuai/tests"),
+ * so folders are expanded here to the saved flows inside them (recursively, sorted). Paths that don't exist,
+ * or folders with no flows, are passed through so kane-cli reports them.
+ */
+export async function expandTestPaths(paths: string[] | undefined, cwd: string): Promise<string[] | undefined> {
+  if (!paths?.length) return paths;
+  const out: string[] = [];
+  const walk = async (abs: string, rel: string): Promise<string[]> => {
+    const found: string[] = [];
+    for (const e of (await readdir(abs, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (e.isDirectory()) found.push(...(await walk(join(abs, e.name), join(rel, e.name))));
+      else if (e.isFile() && e.name.endsWith("_test.md")) found.push(join(rel, e.name));
+    }
+    return found;
+  };
+  for (const p of paths) {
+    let isDir = false;
+    try { isDir = (await stat(resolve(cwd, p))).isDirectory(); } catch { /* let kane-cli report it */ }
+    const files = isDir ? await walk(resolve(cwd, p), p) : [];
+    out.push(...(files.length ? files : [p]));
+  }
+  return out;
+}
+
+/** kane-cli prints update notices on stderr even in --agent mode; drop them from error summaries. */
+export function cleanStderr(text: string): string {
+  return text.split("\n").filter((l) => !/^\s*(Skill update available|Update available)\b/.test(l)).join("\n").trim();
+}
+
 export function replayExitToStatus(code: number | null): ReplayStatus {
   switch (code) {
     case 0: return "pass";
@@ -89,6 +120,8 @@ export async function replayTests(input: ReplayInput = {}, opts: RunOptions = {}
   let start: Json | undefined;
   let stderr = "";
 
+  const cwd = opts.cwd ?? eventsDir;
+  const paths = await expandTestPaths(input.paths, cwd);
   await emit({ type: "replay_start", paths: input.paths, match: input.match, tags: input.tags });
 
   const handle = async (line: string) => {
@@ -107,7 +140,7 @@ export async function replayTests(input: ReplayInput = {}, opts: RunOptions = {}
   const exitCode = await new Promise<number | null>((resolve) => {
     let child;
     try {
-      child = spawn(bin, buildReplayArgs(input), { cwd: opts.cwd ?? eventsDir, stdio: ["ignore", "pipe", "pipe"] });
+      child = spawn(bin, buildReplayArgs({ ...input, paths }), { cwd, stdio: ["ignore", "pipe", "pipe"] });
     } catch (e) { stderr += String(e); resolve(null); return; }
     let buf = "";
     let chain = Promise.resolve();
@@ -141,7 +174,7 @@ export async function replayTests(input: ReplayInput = {}, opts: RunOptions = {}
     : status === "fail"
       ? `${failed.length} of ${members.length} saved flow(s) failed: ` + failed.map((m) => `${m.path} (${m.failure?.message ?? m.status})`).join("; ")
       : status === "cancelled" ? "Replay was cancelled or timed out."
-        : (stderr.trim().slice(0, 500) || `kane-cli exited with ${exitCode}`);
+        : (cleanStderr(stderr).slice(0, 500) || `kane-cli exited with ${exitCode}`);
 
   const result: ReplayResult = {
     status,
@@ -160,20 +193,37 @@ export async function replayTests(input: ReplayInput = {}, opts: RunOptions = {}
 
 export interface FailureDetail {
   log_path: string;
+  /** test_md step (the "## Step N" section of the saved flow) that failed. */
   failed_step?: number;
   heading?: string;
+  /** Kane action index inside that step (step_end.index), e.g. the failing assert. */
+  failed_action?: number;
   message?: string;
+  /** Kane's own description of the failing action (assertion text or step summary), when the log has one. */
+  detail?: string;
   remarks: string[];
   screenshots: string[];
+  /** Kane checks (run_end context variables) that came back "false". */
+  failed_checks: string[];
 }
 
-/** Reads one member's events.ndjson and pulls out what an agent needs to fix the failure. */
+/**
+ * Reads one member's events.ndjson and pulls out what an agent needs to fix the failure.
+ * Real kane-cli 0.10.3 replay logs carry the failing assertion as step_event {event:"assertion", detail, passed:false}
+ * and step_end {index, status:"failed", summary}; run_end has reason "assertion_failed: @ step N", an absolute
+ * screenshot_path and context.variables whose value is "false" for each failed check. step_end.screenshot is a bare
+ * file name ("screenshot.jpg"), so only absolute screenshot paths are kept.
+ */
 export async function getFailure(logPath: string): Promise<FailureDetail> {
   const raw = await readFile(logPath, "utf8");
   const headings = new Map<number, string>();
   const remarks: string[] = [];
   const screenshots = new Set<string>();
+  const failedChecks: string[] = [];
   let failedStep: number | undefined;
+  let failedAction: number | undefined;
+  let failedAssertion: string | undefined;
+  let failedSummary: string | undefined;
   let message: string | undefined;
   for (const line of raw.split("\n")) {
     if (!line.trim()) continue;
@@ -181,17 +231,35 @@ export async function getFailure(logPath: string): Promise<FailureDetail> {
     try { o = JSON.parse(line) as Json; } catch { continue; }
     if (o.type === "test_md_step_start" && typeof o.step_index === "number" && s(o.heading)) headings.set(o.step_index, (o.heading as string).trim());
     else if (o.type === "test_md_step_end" && o.status === "failed" && typeof o.step_index === "number") failedStep = o.step_index;
-    else if (o.type === "run_end" && o.status !== "passed") message = s(o.reason) ?? s(o.summary) ?? message;
-    else if (o.type === "error") message = s(o.message) ?? message;
+    else if (o.type === "step_event" && o.event === "assertion" && o.passed === false && s(o.detail)) {
+      failedAssertion = o.detail as string;
+      remarks.push(`Assertion failed: ${failedAssertion}`);
+    } else if (o.type === "step_end" && o.status === "failed") {
+      if (typeof o.index === "number") failedAction = o.index;
+      failedSummary = s(o.summary) ?? failedSummary;
+    } else if (o.type === "run_end" && o.status !== "passed") {
+      message = s(o.reason) ?? s(o.summary) ?? message;
+      const vars = (o.context as Json | undefined)?.variables as Record<string, Json> | undefined;
+      for (const [k, v] of Object.entries(vars ?? {})) if (v && v.value === "false") failedChecks.push(k);
+    } else if (o.type === "error") message = s(o.message) ?? message;
     if (s(o.remark)) remarks.push(o.remark as string);
-    for (const k of ["screenshot", "screenshot_path", "image_path"]) if (s(o[k])) screenshots.add(o[k] as string);
+    for (const k of ["screenshot", "screenshot_path", "image_path"]) if (s(o[k]) && isAbsolute(o[k] as string)) screenshots.add(o[k] as string);
   }
+  let detail: string | undefined;
+  if (failedAssertion || failedSummary) {
+    const what = failedAssertion ? `assertion failed: ${failedAssertion}` : `${failedSummary} failed`;
+    detail = message = failedAction !== undefined ? `Kane action ${failedAction}: ${what}` : what;
+  }
+  if (failedChecks.length) remarks.push(`Checks that came back false: ${failedChecks.join(", ")}`);
   return {
     log_path: logPath,
     failed_step: failedStep,
     heading: failedStep !== undefined ? headings.get(failedStep) : undefined,
+    failed_action: failedAction,
     message: message ?? (failedStep !== undefined ? `step ${failedStep} failed` : undefined),
+    detail,
     remarks: remarks.slice(-5),
     screenshots: [...screenshots],
+    failed_checks: failedChecks,
   };
 }

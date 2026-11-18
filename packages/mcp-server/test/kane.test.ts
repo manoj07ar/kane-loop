@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { verifyWithKane, buildArgs, exitCodeToStatus } from "../src/kane.js";
+import { verifyWithKane, buildArgs, exitCodeToStatus, ensureStartUrl } from "../src/kane.js";
 
 const bin = resolve(__dirname, "fake-kane.mjs");
 let dir: string;
@@ -73,5 +73,45 @@ describe("helpers", () => {
   });
   it("defaults timeout to 180 and omits name", () => {
     expect(buildArgs({ url: "u", objective: "o" })).toEqual(["run", "o", "--url", "u", "--agent", "--headless", "--timeout", "180"]);
+  });
+});
+
+// Frontmatter exactly as kane-cli 0.10.3 wrote it for `run --name splitly-even-split` on 18 Nov 2026.
+const REAL_SAVED_MD = "---\nmode: testing\nmax_steps: 50\ntimeout: 240\ntarget: chrome\nheadless: true\n---\n\n# Session: splitly-even-split\n\n## Step 1\nClick Reset.\n";
+
+describe("real kane-cli 0.10.3 run stream", () => {
+  it("parses a recorded green run and pins the start URL into the saved flow", async () => {
+    const tp = join(dir, "splitly-even-split_test.md");
+    process.env.FAKE_KANE_FILE = resolve(__dirname, "fixtures", "real-run-pass-splitly-even-split.ndjson");
+    process.env.FAKE_KANE_TEST_PATH = tp;
+    process.env.FAKE_KANE_TEST_MD = REAL_SAVED_MD;
+    const r = await run("file", { url: "http://127.0.0.1:5173", name: "splitly-even-split" });
+    delete process.env.FAKE_KANE_TEST_MD;
+    expect(r.status).toBe("pass");
+    expect(r.one_liner).toBe("settled a Taxi expense on the expense-splitting page");
+    expect(r.reason).toBe("Objective completed");
+    expect(r.credits_consumed).toBeCloseTo(33.05, 1);
+    expect(r.session_dir).toBe("/tmp/kane-session");
+    expect(r.saved_test).toBe(tp);
+    expect(r.steps.filter((s) => s.status === "done").length).toBeGreaterThan(10);
+    expect(r.failed_step).toBeUndefined();
+    const md = await readFile(tp, "utf8");
+    expect(md.startsWith('---\nurl: "http://127.0.0.1:5173"\nmode: testing\n')).toBe(true);
+    expect(await readFile(join(dir, ".kane-loop", "events.jsonl"), "utf8")).toContain("saved_flow_url_pinned");
+  });
+});
+
+describe("ensureStartUrl", () => {
+  it("adds url to frontmatter once, or creates frontmatter", async () => {
+    const a = join(dir, "a_test.md");
+    await writeFile(a, REAL_SAVED_MD);
+    expect(await ensureStartUrl(a, "http://x")).toBe(true);
+    expect(await ensureStartUrl(a, "http://y")).toBe(false);
+    expect((await readFile(a, "utf8")).match(/^url:/gm)).toHaveLength(1);
+    const b = join(dir, "b_test.md");
+    await writeFile(b, "## Step 1\nGo\n");
+    expect(await ensureStartUrl(b, "http://x")).toBe(true);
+    expect(await readFile(b, "utf8")).toBe('---\nurl: "http://x"\n---\n\n## Step 1\nGo\n');
+    expect(await ensureStartUrl(join(dir, "missing_test.md"), "http://x")).toBe(false);
   });
 });
