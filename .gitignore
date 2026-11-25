@@ -3,6 +3,10 @@ dist
 .kane-loop/
 .testmuai/evidence/
 .testmuai/variables/
+.testmuai/tests/output-*/
 *.log
 .env
-.testmuai/tests/output-*/
+.env.*
+!.env.example
+*.pem
+.DS_Store
